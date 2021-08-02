@@ -1,31 +1,35 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import './App.css';
 import { Grid, } from '@material-ui/core';
 import StickyFooter from './Components/Footer';
 import Nav from './Components/Nav';
-import Tickets from './Components/Tickets';
+import Ticket from './views/Ticket';
+import { Route, BrowserRouter as Router, Switch } from "react-router-dom"
+import Dashboard from './views/Dashboard';
 
 
-// import logo from './logo.svg';
-
-class App extends React.Component {
-
-  constructor(props) {
-    super(props);
-    this.state = {
+function App() {
+  const [state, setState] = useState(
+    {
       error: null,
       isLoaded: false,
       items: [],
       tickets: "",
       has_more: false,
+      page: 1,
       before: "",
       after: "",
-    };
+    }
+  )
+
+  const setPageNumber = (newPageNumber) => {
+    setState(prevState => {
+      return { ...prevState, page: newPageNumber }
+    })
   }
 
-  getTickets = (size, before, after) => {
-
+  const getTickets = (size, before, after) => {
     axios.get("http://localhost:3001/tickets",
       {
         params: {
@@ -37,10 +41,13 @@ class App extends React.Component {
     ).then((response) => {
       // handle success
       console.log(response)
-      this.setState(prevState => {
+      setState(prevState => {
         return {
           ...prevState,
           tickets: response.data.tickets,
+          has_more: response.data.meta.has_more,
+          before: response.data.meta.before_cursor,
+          after: response.data.meta.after_cursor,
           isLoaded: true,
         }
       })
@@ -50,23 +57,44 @@ class App extends React.Component {
     })
   }
 
-  componentDidMount() {
-    this.getTickets(25)
-  }
+  useEffect(() => {
+    // Update the document title using the browser API
+    if (!state.tickets) {
+      getTickets(25);
+    }
+  });
 
-  render() {
-    return (
+  return (
+    <Router>
       <Grid>
         <Nav />
-        <Tickets
-          error={this.state.error}
-          tickets={this.state.tickets}
-          isLoaded={this.state.isLoaded}
-        />
+        {/* A <Switch> looks through its children <Route>s and
+            renders the first one that matches the current URL. */}
+        <Switch>
+          <Route exact path="/ticket/:ticketID" render={(props) => (
+            <Ticket
+              tickets={state.tickets}
+              ticketID={props.match.params.ticketID}
+            />
+          )} />
+          <Route exact path="/">
+            <Dashboard
+              error={state.error}
+              tickets={state.tickets}
+              isLoaded={state.isLoaded}
+              has_more={state.has_more}
+              before={state.before}
+              after={state.after}
+              page={state.page}
+              getTickets={getTickets}
+              setPageNumber={setPageNumber}
+            />
+          </Route>
+        </Switch>
         <StickyFooter />
       </Grid>
-    )
-  }
+    </Router >
+  )
 }
 
 export default App;
