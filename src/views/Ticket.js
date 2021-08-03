@@ -1,6 +1,11 @@
 import React from 'react';
-import { Grid, makeStyles, Paper } from '@material-ui/core';
+import { Button, Grid, makeStyles, Paper } from '@material-ui/core';
 import Typography from '@material-ui/core/Typography';
+import { useLocation } from 'react-router';
+import { Link } from 'react-router-dom';
+import ArrowBackIcon from '@material-ui/icons/ArrowBack';
+import Divider from '@material-ui/core/Divider';
+
 
 const useStyles = makeStyles((theme) => ({
     layout: {
@@ -25,9 +30,8 @@ const useStyles = makeStyles((theme) => ({
     },
 }))
 
-function getTicket(tickets, ticketID){
+function getTicket(tickets, ticketID) {
     for (var index in tickets) {
-        console.log(tickets[index]["id"])
         if (tickets[index]["id"].toString() === ticketID) {
             return tickets[index]
         }
@@ -37,40 +41,54 @@ function getTicket(tickets, ticketID){
 
 function Dashboard(props) {
     const classes = useStyles();
+    const location = useLocation()
+    const tickets = location.state.tickets
     const id = props.ticketID
-    const ticket = getTicket(props.tickets, props.ticketID)
-    console.log(props.tickets)
-    console.log(props.ticketID)
-
+    const ticket = getTicket(tickets, props.ticketID)
 
     return (
-        <main className={classes.layout}>
+        <div className={classes.layout}>
             <Paper className={classes.paper}>
                 <Grid>
-                    <Typography variant="h6" gutterBottom>
-                        {"Ticket id: " + id.toString()}
+                    <Typography gutterBottom variant="h5" component="h2">
+                        {"Ticket #" + id.toString()}
                     </Typography>
-                    <Typography variant="h6" gutterBottom>
-                        {"Created at: " + ticket.created_at}
+                    <Divider variant="middle" />
+                    <Typography gutterBottom>
+                        <b>Status: </b> {ticket.status}
                     </Typography>
-                    <Typography variant="h6" gutterBottom>
-                        {"Description: " + ticket.description}
+                    <Typography gutterBottom>
+                        <b>Creation date: </b>{(new Date(ticket["created_at"])).toLocaleDateString('en-US')}
                     </Typography>
-                    <Typography variant="h6" gutterBottom>
-                        {"Raw subject " + ticket.raw_subject}
+                    <Typography gutterBottom>
+                        <b>Requester id: </b>{ticket.requester_id}
                     </Typography>
-                    <Typography variant="h6" gutterBottom>
-                        {"Requester id: " + ticket.requester_id}
+                    <Typography gutterBottom>
+                        <b>Subject: </b> {ticket.subject}
                     </Typography>
-                    <Typography variant="h6" gutterBottom>
-                        {"Status: " + ticket.status}
+                    <Divider variant="middle" />
+                    <Typography variant="h6" component="h3">
+                        {"Description"}
                     </Typography>
-                    <Typography variant="h6" gutterBottom>
-                        {"Subject: " + ticket.subject}
+                    <Typography>
+                        {ticket["description"]}
                     </Typography>
+                    <Link
+                        to={{ pathname: "/" }}
+                        style={{ textDecoration: 'none' }}
+                    >
+                        <Button
+                            variant="contained"
+                            color="primary"
+                            startIcon={<ArrowBackIcon />}
+                            style={{ marginTop: "10px" }}
+                        >
+                            {"Back to Dashboard"}
+                        </Button>
+                    </Link>
                 </Grid>
             </Paper>
-        </main>
+        </div>
     )
 }
 

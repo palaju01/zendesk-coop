@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import axios from 'axios';
 import './App.css';
 import { Grid, } from '@material-ui/core';
@@ -8,28 +8,22 @@ import Ticket from './views/Ticket';
 import { Route, BrowserRouter as Router, Switch } from "react-router-dom"
 import Dashboard from './views/Dashboard';
 
+const emptyTicketsState = {
+  tickets: null,
+  meta: {
+    "has_more": false,
+    "after_cursor": "",
+    "before_cursor": "",
+  },
+  error: null,
+  isLoaded: false,
+  page: 1,
+}
 
 function App() {
-  const [state, setState] = useState(
-    {
-      error: null,
-      isLoaded: false,
-      items: [],
-      tickets: "",
-      has_more: false,
-      page: 1,
-      before: "",
-      after: "",
-    }
-  )
+  const [state, setState] = useState(sessionStorage.getItem("tickets") ? JSON.parse(sessionStorage.getItem("tickets")) : emptyTicketsState)
 
-  const setPageNumber = (newPageNumber) => {
-    setState(prevState => {
-      return { ...prevState, page: newPageNumber }
-    })
-  }
-
-  const getTickets = (size, before, after) => {
+  const getTickets = (size, before, after, page) => {
     axios.get("http://localhost:3001/tickets",
       {
         params: {
@@ -40,29 +34,21 @@ function App() {
       }
     ).then((response) => {
       // handle success
-      console.log(response)
-      setState(prevState => {
-        return {
-          ...prevState,
-          tickets: response.data.tickets,
-          has_more: response.data.meta.has_more,
-          before: response.data.meta.before_cursor,
-          after: response.data.meta.after_cursor,
-          isLoaded: true,
-        }
-      })
+      var prevState = { ...state, tickets: response.data.tickets, meta:response.data.meta, isLoaded:true, page:page}
+      sessionStorage.setItem("tickets", JSON.stringify(prevState))
+      setState(prevState)
     }).catch((error) => {
       // handle errors
-      console.log(error);
+      setState( (previousState) => {
+        return {...previousState, error: error}
+      })
     })
   }
 
-  useEffect(() => {
-    // Update the document title using the browser API
-    if (!state.tickets) {
-      getTickets(25);
+
+  if (!state.tickets) {
+      getTickets(25,"","",1);
     }
-  });
 
   return (
     <Router>
@@ -73,21 +59,20 @@ function App() {
         <Switch>
           <Route exact path="/ticket/:ticketID" render={(props) => (
             <Ticket
-              tickets={state.tickets}
               ticketID={props.match.params.ticketID}
             />
           )} />
           <Route exact path="/">
             <Dashboard
               error={state.error}
-              tickets={state.tickets}
               isLoaded={state.isLoaded}
-              has_more={state.has_more}
-              before={state.before}
-              after={state.after}
               page={state.page}
+              tickets={state.tickets}
+              has_more={state.meta.has_more}
+              before={state.meta.before_cursor}
+              after={state.meta.after_cursor}
               getTickets={getTickets}
-              setPageNumber={setPageNumber}
+              setState={setState}
             />
           </Route>
         </Switch>

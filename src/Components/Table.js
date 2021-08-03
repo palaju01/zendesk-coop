@@ -5,11 +5,10 @@ import TableCell from '@material-ui/core/TableCell';
 import TableContainer from '@material-ui/core/TableContainer';
 import TableHead from '@material-ui/core/TableHead';
 import TableRow from '@material-ui/core/TableRow';
-import IconButton from '@material-ui/core/IconButton';
 import ArrowBackIosIcon from '@material-ui/icons/ArrowBackIos';
 import ArrowForwardIosIcon from '@material-ui/icons/ArrowForwardIos';
-import ButtonGroup from '@material-ui/core/ButtonGroup';
-
+import { Link } from 'react-router-dom';
+import Button from '@material-ui/core/Button';
 
 
 class TicketsTable extends React.Component {
@@ -31,13 +30,13 @@ class TicketsTable extends React.Component {
             {
                 id: 'requester_id',
                 label: 'Requester ID',
-                maxWidth: 100,
+                maxWidth: "100px",
                 align: 'center',
             },
             {
                 id: 'created_at',
                 label: 'Creation date',
-                maxWidth: 100,
+                maxWidth: "100px",
                 align: 'center',
                 format: (value) => (new Date(value)).toLocaleDateString('en-US'),
             },
@@ -65,20 +64,19 @@ class TicketsTable extends React.Component {
                     <TableBody>
                         {rows.map((ticket) => {
                             return (
-                                <TableRow 
-                                    hover 
-                                    role="checkbox" 
-                                    tabIndex={-1} 
+                                <TableRow
+                                    hover
+                                    role="checkbox"
+                                    tabIndex={-1}
                                     key={ticket.id}
-                                    onClick={() => {
-                                        window.location.href = window.location.href + "ticket/" + ticket.id;
-                                    }}
                                 >
                                     {this.columns.map((column) => {
                                         const value = ticket[column.id];
                                         return (
                                             <TableCell key={column.id} align={column.align}>
-                                                {column.format && column.id === 'created_at' ? column.format(value) : value}
+                                                {column.format && column.id === 'created_at' ? column.format(value) :
+                                                    (column.id === 'id' ?
+                                                        <Link to={{ pathname: "/ticket/" + ticket.id, state: { tickets: rows } }}> {value} </Link> : value)}
                                             </TableCell>
                                         );
                                     })}
@@ -87,41 +85,30 @@ class TicketsTable extends React.Component {
                         })}
                     </TableBody>
                 </Table>
-                <ButtonGroup 
-                    variant="text" 
-                    color="primary" 
-                    aria-label="text primary button group" 
-                    style={{ 
-                        display: 'flex', 
-                        justifyContent: 'flex-end',
-                        margin: "15px"
-                        }}
+                <Button
+                    variant="contained"
+                    color="primary"
+                    startIcon={<ArrowBackIosIcon />}
+                    style={{ marginTop: "10px" }}
+                    disabled={this.props.page <= 1}
+                    onClick={() => {
+                        this.props.getTickets(25, this.props.before, "", this.props.page - 1)
+                    }}
                 >
-                    <IconButton
-                        aria-label="previous page"
-                        size="small"
-                        disabled={this.props.page <= 1}
-                        onClick={() => {
-                            this.props.setPageNumber(this.props.page - 1)
-                            this.props.getTickets(25, this.props.before, "")
-                        }}
-                    >
-                        <ArrowBackIosIcon fontSize="inherit" />
-                                Previous page
-                            </IconButton>
-                    <IconButton
-                        aria-label="next page"
-                        size="small"
-                        disabled={!this.props.has_more}
-                        onClick={() => {
-                            this.props.setPageNumber(this.props.page + 1)
-                            this.props.getTickets(25, "", this.props.after)
-                        }}
-                    >
-                        Next page
-                                <ArrowForwardIosIcon fontSize="inherit" />
-                    </IconButton>
-                </ButtonGroup>
+                    {"Back to Dashboard"}
+                </Button>
+                <Button
+                    variant="contained"
+                    color="primary"
+                    endIcon={<ArrowForwardIosIcon />}
+                    style={{ marginTop: "10px" }}
+                    disabled={!this.props.has_more}
+                    onClick={() => {
+                        this.props.getTickets(25, "", this.props.after, this.props.page + 1)
+                    }}
+                >
+                    {"Back to Dashboard"}
+                </Button>
             </TableContainer>
         );
     }
