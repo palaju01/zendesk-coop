@@ -89,7 +89,7 @@ class TicketsTable extends React.Component {
                     variant="contained"
                     color="primary"
                     startIcon={<ArrowBackIosIcon />}
-                    style={{ marginTop: "10px" }}
+                    style={{ marginTop: "10px", marginRight: "10px"}}
                     disabled={this.props.page <= 1}
                     onClick={() => {
                         this.props.getTickets(25, this.props.before, "", this.props.page - 1)

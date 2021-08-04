@@ -30,7 +30,7 @@ function Dashboard(props) {
   return (
     <main className={classes.layout}>
       <Paper className={classes.paper}>
-        {props.error ? <div>Error: {props.error.message}</div> :
+        {props.error ? <div>Sorry, we experienced an error retrieving the tickets. Error: {props.error.message}. Please reload the page and try again.</div> :
           (!props.isLoaded ? <div>Loading...</div> :
             <Table
               rows={props.tickets}
